@@ -1,0 +1,1 @@
+const assets_path = "C:\\Users\\aryan\\.julia\\geniebuilder\\apps\\ScoringEngineDemo\\assets"
