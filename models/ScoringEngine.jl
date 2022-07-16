@@ -133,19 +133,9 @@ const p_importance_gbt = begin
     ScoringEngineDemo.plot_shap_importance(df_importance, color=j_purple, title="GBT feature importance")
 end
 
-
-
-
+# Reactive Stipple Model for frontend
 @reactive mutable struct Score <: ReactiveModel
-  # features::R{Vector{String}} = ["pol_no_claims_discount", "pol_duration", "pol_sit_duration", "vh_value",
-  # "vh_weight", "vh_age", "population", "town_surface_area", "drv_age1", "drv_age_lic1"]
-  # feature::R{String} = "vh_value"
 
-  # groupmethods::R{Vector{String}} = ["quantiles", "linear"]
-  # groupmethod::R{String} = "quantiles"
-
-  # sample_size::R{Int} = 50
-  # features
   features::R{Vector{String}} = features_effect
   feature::R{String} = "vh_value"
 
@@ -170,16 +160,6 @@ end
   explain_gbt_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
   explain_gbt_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
-  # Flux feature importance
-#   hist_flux_traces::R{Vector{GenericTrace}} = ScoringEngineDemo.p_importance_flux[:traces]
-#   hist_flux_layout::R{PlotlyBase.Layout} = ScoringEngineDemo.p_importance_flux[:layout]
-#   hist_flux_config::R{PlotlyBase.PlotConfig} = ScoringEngineDemo.p_importance_flux[:config]
-
-  # GBT feature importance
-#   hist_gbt_traces::R{Vector{GenericTrace}} = p_importance_gbt[:traces]
-#   hist_gbt_layout::R{PlotlyBase.Layout} = p_importance_gbt[:layout]
-#   hist_gbt_config::R{PlotlyBase.PlotConfig} = p_importance_gbt[:config]
-
   weave::R{Bool} = false
   resample::R{Bool} = false
   sample_size::R{Int} = 50
@@ -192,8 +172,8 @@ Return one-way effect plot based on selected var
 function one_way_plot!(df, m::Score)
 
     targets = ["event", "flux", "gbt"]
-    df_bins = ScoringEngines.one_way_data(df, m.feature[], 10; targets, method=m.groupmethod[])
-    p = ScoringEngines.one_way_plot_weights(df_bins; targets)
+    df_bins = ScoringEngineDemo.one_way_data(df, m.feature[], 10; targets, method=m.groupmethod[])
+    p = ScoringEngineDemo.one_way_plot_weights(df_bins; targets)
 
     m.one_way_traces[] = p[:traces]
     m.one_way_layout[] = p[:layout]
@@ -209,13 +189,13 @@ function shap_effect_plot!(df, m::Score)
     df_sample = df[ids, :]
 
     df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=[m.feature[]])
-    shap_effect_flux = get_shap_effect(df_shap_flux, feat=m.feature[])
+    shap_effect_flux = ScoringEngineDemo.get_shap_effect(df_shap_flux, feat=m.feature[])
 
     df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=[m.feature[]])
-    shap_effect_gbt = get_shap_effect(df_shap_gbt, feat=m.feature[])
+    shap_effect_gbt = ScoringEngineDemo.get_shap_effect(df_shap_gbt, feat=m.feature[])
 
-    p_flux = plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
-    p_gbt = plot_shap_effect(shap_effect_gbt, color=j_purple, title="Feature effect", name="gbt")
+    p_flux = ScoringEngineDemo.plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
+    p_gbt = ScoringEngineDemo.plot_shap_effect(shap_effect_gbt, color=j_purple, title="Feature effect", name="gbt")
 
     m.shap_effect_traces[] = [p_flux[:traces]..., p_gbt[:traces]...]
     m.shap_effect_layout[] = p_flux[:layout]
@@ -231,13 +211,13 @@ function shap_explain_plot!(df, m::Score)
     df_sample = df[ids, :]
 
     df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=features_importance)
-    df_explain_flux = get_shap_explain(df_shap_flux)
+    df_explain_flux = ScoringEngineDemo.get_shap_explain(df_shap_flux)
 
     df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=features_importance)
-    df_explain_gbt = get_shap_explain(df_shap_gbt)
+    df_explain_gbt = ScoringEngineDemo.get_shap_explain(df_shap_gbt)
 
-    p_flux = plot_shap_explain(df_explain_flux, title="Flux explain")
-    p_gbt = plot_shap_explain(df_explain_gbt, title="GBT explain")
+    p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain")
+    p_gbt = ScoringEngineDemo.plot_shap_explain(df_explain_gbt, title="GBT explain")
 
     m.explain_flux_traces[] = p_flux[:traces]
     m.explain_flux_layout[] = p_flux[:layout]
